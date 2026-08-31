@@ -1,82 +1,18 @@
-<!doctype html><html lang="ko"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>당근 제휴광고 제작기 V6.3</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>당근 제휴광고 제작기 V6.4</title>
 <style>
-body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#222}.wrap{max-width:820px;margin:auto;padding:18px}
-.badge{display:inline-block;background:#222;color:#fff;border-radius:999px;padding:6px 10px;font-size:13px;margin-bottom:8px}
-.card{background:white;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 2px 10px #0001}
-input,select{width:100%;box-sizing:border-box;padding:13px;margin:6px 0 12px;border:1px solid #ddd;border-radius:10px;font-size:16px}
-button,a.btn{background:#ff6f0f;color:#fff;border:0;border-radius:11px;padding:13px 16px;font-weight:bold;font-size:16px;text-decoration:none;display:inline-block}
-.tabs button{margin-right:6px}.muted{color:#777;font-size:13px}.hide{display:none}.title{padding:10px;border-bottom:1px solid #eee}
-.result{margin-top:18px;padding:18px;border:3px solid #ff6f0f;border-radius:14px;background:#fffaf6}
-.big{display:block!important;text-align:center;width:100%;box-sizing:border-box;padding:17px!important;font-size:18px!important;margin-top:12px}
-.download{background:#111!important;font-size:20px!important}
-video{width:100%;max-height:600px;border-radius:12px;background:#000}
-</style></head>
-<body><div class="wrap">
-<div class="badge">현재 버전 V6.3</div><h1>🥕 당근 제휴광고 제작기 V6.3</h1>
-<p class="muted">캐시 제거 + 영상 완료 후 다운로드 버튼 강제 표시</p>
-
-<div class="tabs"><button onclick="show('reg')">광고 등록</button><button onclick="show('vid')">이미지→영상</button></div>
-<div id="reg" class="card"><h2>광고 등록정보 자동 생성</h2>
-<label>상품명</label><input id="product"><label>업체/브랜드명</label><input id="brand">
-<label>DBsense 원본 홍보링크</label><input id="url"><label>행동 유도</label><input id="cta" value="바로가기">
-<button onclick="gen()">당근 등록용 만들기</button><div id="titles"></div></div>
-
-<div id="vid" class="card hide"><h2>V6.3 자동 광고영상</h2>
-<label>상품명</label><input id="vp"><label>광고 제목</label><input id="vt">
-<label>첫 3초 후킹</label><input id="hook"><label>핵심 포인트 1</label><input id="p1"><label>핵심 포인트 2</label><input id="p2">
-<label>마지막 CTA</label><input id="vcta" value="자세한 조건은 바로가기">
-<label>길이</label><select id="dur"><option value="15">15초</option><option value="30">30초</option></select>
-<label>DBsense/광고주 사용 허가 이미지</label><input id="imgs" type="file" accept="image/*" multiple>
-<button id="vb" class="big" onclick="video()">🎬 자동 광고영상 만들기</button>
-<div id="status"></div></div></div>
-
-<script>
-(async()=>{try{
-  const regs=await navigator.serviceWorker?.getRegistrations?.();
-  if(regs) for(const r of regs) await r.unregister();
-  if('caches' in window){for(const k of await caches.keys()) await caches.delete(k);}
-}catch(e){}})();
-
-function show(x){document.getElementById('reg').classList.toggle('hide',x!='reg');document.getElementById('vid').classList.toggle('hide',x!='vid')}
-
-async function gen(){
- let r=await fetch('/api/generate?ts='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},
- body:JSON.stringify({product:product.value,brand:brand.value,url:url.value,cta:cta.value})});
- let j=await r.json();if(!r.ok){alert(j.error);return}
- vp.value=product.value;
- titles.innerHTML='<h3>광고 제목 TOP 10</h3>'+j.titles.map((t,i)=>`<div class=title>${i+1}. ${t} <button onclick="pick('${t.replaceAll("'","")}')">선택</button></div>`).join('')
-}
-function pick(t){vt.value=t;hook.value=`${vp.value}, 선택 전 확인하세요`;p1.value='조건을 먼저 비교해보세요';p2.value='내 상황에 맞는지 체크';show('vid')}
-
-async function video(){
- if(!imgs.files.length){alert('이미지를 올려주세요.');return}
- vb.disabled=true;vb.textContent='⏳ 영상 만드는 중...';
- status.innerHTML='<div class="result">영상 생성 중입니다...</div>';
- let f=new FormData();
- [['product',vp.value],['title',vt.value],['hook',hook.value],['point1',p1.value],['point2',p2.value],['cta',vcta.value],['duration',dur.value]].forEach(x=>f.append(x[0],x[1]));
- for(let x of imgs.files)f.append('images',x);
-
- try{
-   let r=await fetch('/api/video?ts='+Date.now(),{method:'POST',body:f,cache:'no-store'});
-   let j=await r.json();
-   if(!r.ok) throw new Error(j.error||'실패');
-   const html=`<div class="result">
-     <h2>✅ 영상 완성! V${j.version}</h2>
-     <p>생성 시간 ${j.seconds}초</p>
-     <video controls playsinline src="${j.file_url}?ts=${Date.now()}"></video>
-     <a class="btn big download" href="${j.download_url}?ts=${Date.now()}">⬇️ MP4 다운로드</a>
-     <a class="btn big" href="${j.file_url}?ts=${Date.now()}" target="_blank">▶️ 영상 새 창에서 열기</a>
-   </div>`;
-   status.innerHTML=html;
-   status.scrollIntoView({behavior:'smooth',block:'start'});
- }catch(e){
-   status.innerHTML=`<div class="result"><p style="color:#c00">❌ ${e.message}</p></div>`;
- }finally{
-   vb.disabled=false;vb.textContent='🎬 자동 광고영상 만들기';
- }
-}
-</script></body></html>
+body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#222}.wrap{max-width:820px;margin:auto;padding:18px}.badge{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:6px 10px;font-size:13px}.card{background:white;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 2px 10px #0001}input,select{width:100%;box-sizing:border-box;padding:13px;margin:6px 0 12px;border:1px solid #ddd;border-radius:10px;font-size:16px}button{background:#ff6f0f;color:#fff;border:0;border-radius:11px;padding:16px;font-weight:bold;font-size:18px;width:100%}.muted{color:#777;font-size:13px}</style></head>
+<body><div class="wrap"><span class="badge">현재 버전 V6.4</span><h1>🥕 당근 제휴광고 제작기</h1>
+<p class="muted">이번 버전은 영상 생성 후 새 결과 페이지로 이동하므로 JavaScript 상태표시에 의존하지 않습니다.</p>
+<div class="card"><h2>이미지 → 광고영상</h2>
+<form action="/video-form" method="post" enctype="multipart/form-data">
+<label>상품명</label><input name="product" required>
+<label>광고 제목</label><input name="title">
+<label>첫 3초 후킹</label><input name="hook" placeholder="비워두면 자동">
+<label>핵심 포인트 1</label><input name="point1" placeholder="비워두면 자동">
+<label>핵심 포인트 2</label><input name="point2" placeholder="비워두면 자동">
+<label>마지막 CTA</label><input name="cta" value="자세한 조건은 바로가기">
+<label>길이</label><select name="duration"><option value="15">15초</option><option value="30">30초</option></select>
+<label>DBsense/광고주 사용 허가 이미지</label><input name="images" type="file" accept="image/*" multiple required>
+<button type="submit">🎬 영상 만들고 다운로드 화면으로 이동</button>
+</form></div></div></body></html>
