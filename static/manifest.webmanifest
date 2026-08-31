@@ -1,16 +1,1 @@
-{
-  "name": "당근 제휴광고 제작기 V5",
-  "short_name": "당근광고 V5",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f6f6f7",
-  "theme_color": "#ff7e36",
-  "icons": [
-    {
-      "src": "/static/icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
-}
+{"name":"당근 제휴광고 제작기 V6","short_name":"당근광고 V6","start_url":"/","display":"standalone","background_color":"#fff7ef","theme_color":"#ff6f0f"}
