@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for
 from PIL import Image, ImageDraw, ImageFont
 import os, uuid, subprocess, logging, time, shutil, re
 
@@ -64,27 +64,21 @@ def frame(img_path, caption, badge, idx):
     d.rectangle((0,0,W,92), fill=(0,0,0,125))
     d.text((28,25), badge, font=font(28), fill="white")
     d.rounded_rectangle((28,H-360,W-28,H-105), radius=28, fill=(0,0,0,165))
-    f=font(48)
-    lines=wrap(d,caption,f,W-100)
-    y=H-320
-    for line in lines:
+    f=font(48); y=H-320
+    for line in wrap(d,caption,f,W-100):
         box=d.textbbox((0,0),line,font=f); tw=box[2]-box[0]
         d.text(((W-tw)//2,y),line,font=f,fill="white"); y+=66
     return im
 
 @app.after_request
 def no_cache(resp):
-    # 브라우저/PWA가 예전 index.html과 JS를 계속 보여주는 문제 방지
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    resp.headers["Pragma"] = "no-cache"
-    resp.headers["Expires"] = "0"
+    resp.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"]="no-cache"; resp.headers["Expires"]="0"
     return resp
 
 @app.route("/")
 def home():
-    resp = make_response(render_template("index.html"))
-    resp.headers["X-App-Version"] = "6.3"
-    return resp
+    return render_template("index.html")
 
 @app.route("/healthz")
 def health(): return "ok",200
@@ -99,24 +93,21 @@ def generate():
     return jsonify(titles=make_copy(product,brand), brand=brand, url=url,
                    cta=data.get("cta","바로가기"), disclosure="[광고/제휴 링크]")
 
-@app.route("/api/video", methods=["POST"])
-def video():
-    t0=time.time(); job=None; jobdir=None
-    try:
-        product=safe_text(request.form.get("product"),50)
-        hook=safe_text(request.form.get("hook"),70) or f"{product}, 선택 전 확인하세요"
-        point1=safe_text(request.form.get("point1"),70) or "조건을 먼저 비교해보세요"
-        point2=safe_text(request.form.get("point2"),70) or "내 상황에 맞는지 체크"
-        cta=safe_text(request.form.get("cta"),40) or "자세한 조건은 바로가기"
-        duration=int(request.form.get("duration","15"))
-        duration=15 if duration not in (15,30) else duration
-        files=request.files.getlist("images")
-        if not files or not files[0].filename:
-            return jsonify(error="광고 이미지를 1장 이상 올려주세요."),400
+def create_video_from_form(form, files):
+    t0=time.time()
+    product=safe_text(form.get("product"),50)
+    hook=safe_text(form.get("hook"),70) or f"{product}, 선택 전 확인하세요"
+    point1=safe_text(form.get("point1"),70) or "조건을 먼저 비교해보세요"
+    point2=safe_text(form.get("point2"),70) or "내 상황에 맞는지 체크"
+    cta=safe_text(form.get("cta"),40) or "자세한 조건은 바로가기"
+    duration=int(form.get("duration","15"))
+    duration=15 if duration not in (15,30) else duration
+    if not files or not files[0].filename:
+        raise ValueError("광고 이미지를 1장 이상 올려주세요.")
 
-        job=uuid.uuid4().hex[:10]
-        jobdir=os.path.join(UP,job)
-        os.makedirs(jobdir)
+    job=uuid.uuid4().hex[:10]
+    jobdir=os.path.join(UP,job); os.makedirs(jobdir)
+    try:
         paths=[]
         for i,f in enumerate(files[:8]):
             p=os.path.join(jobdir,f"img{i}.jpg")
@@ -129,6 +120,7 @@ def video():
         scene_count=4 if duration==15 else 6
         if duration==30:
             captions=[hook,point1,point2,"핵심 조건을 한 번 더 확인","비교 후 결정하세요",cta]
+
         seg=duration/scene_count
         concat=os.path.join(jobdir,"list.txt")
         scene_files=[]
@@ -143,41 +135,39 @@ def video():
                 f.write(f"duration {seg:.6f}\n")
             f.write(f"file '{os.path.basename(scene_files[-1])}'\n")
 
-        out=f"danggeun_v6_3_{job}_{duration}s.mp4"
+        out=f"danggeun_v6_4_{job}_{duration}s.mp4"
         outp=os.path.join(OUT,out)
         cmd=["ffmpeg","-y","-f","concat","-safe","0","-i",concat,
              "-vf",f"fps={FPS},format=yuv420p","-c:v","libx264","-preset","ultrafast",
              "-crf","25","-t",str(duration),"-movflags","+faststart",outp]
-        subprocess.run(cmd,check=True,stdout=subprocess.DEVNULL,
-                       stderr=subprocess.PIPE,timeout=180,text=True)
+        proc=subprocess.run(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,
+                            timeout=180,text=True)
+        if proc.returncode != 0:
+            logging.error("FFMPEG_ERROR job=%s stderr=%s",job,(proc.stderr or "")[-3000:])
+            raise RuntimeError("FFmpeg 영상 생성에 실패했습니다.")
 
         elapsed=round(time.time()-t0,1)
         logging.info("VIDEO_DONE job=%s sec=%s file=%s",job,elapsed,out)
-        if jobdir: shutil.rmtree(jobdir,ignore_errors=True)
+        return out, elapsed
+    finally:
+        shutil.rmtree(jobdir,ignore_errors=True)
 
-        return jsonify(ok=True,
-                       file_url=f"/output/{out}",
-                       download_url=f"/download/{out}",
-                       filename=out,
-                       seconds=elapsed,
-                       version="6.3")
-    except subprocess.TimeoutExpired:
-        logging.exception("VIDEO_TIMEOUT job=%s",job)
-        return jsonify(error="영상 생성 제한시간을 초과했습니다."),504
-    except subprocess.CalledProcessError as e:
-        logging.error("FFMPEG_ERROR job=%s code=%s stderr=%s",job,e.returncode,(e.stderr or "")[-3000:])
-        return jsonify(error="FFmpeg 영상 생성 오류가 발생했습니다."),500
+@app.route("/video-form", methods=["POST"])
+def video_form():
+    try:
+        out, elapsed = create_video_from_form(request.form, request.files.getlist("images"))
+        return render_template("result.html", filename=out, seconds=elapsed)
     except Exception as e:
-        logging.exception("VIDEO_ERROR job=%s",job)
-        return jsonify(error=f"영상 생성 오류: {str(e)[:180]}"),500
-
-@app.route("/output/<path:name>")
-def output(name):
-    return send_from_directory(OUT,name,as_attachment=False,conditional=False)
+        logging.exception("VIDEO_FORM_ERROR")
+        return render_template("result.html", error=str(e)), 500
 
 @app.route("/download/<path:name>")
 def download(name):
     return send_from_directory(OUT,name,as_attachment=True,download_name=name,conditional=False)
+
+@app.route("/output/<path:name>")
+def output(name):
+    return send_from_directory(OUT,name,as_attachment=False,conditional=False)
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=int(os.getenv("PORT","10000")))
