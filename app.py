@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+
+from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
 from PIL import Image, ImageDraw, ImageFont
 import os, uuid, subprocess, logging, time, shutil, re
 
@@ -71,8 +72,19 @@ def frame(img_path, caption, badge, idx):
         d.text(((W-tw)//2,y),line,font=f,fill="white"); y+=66
     return im
 
+@app.after_request
+def no_cache(resp):
+    # 브라우저/PWA가 예전 index.html과 JS를 계속 보여주는 문제 방지
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
+
 @app.route("/")
-def home(): return render_template("index.html")
+def home():
+    resp = make_response(render_template("index.html"))
+    resp.headers["X-App-Version"] = "6.3"
+    return resp
 
 @app.route("/healthz")
 def health(): return "ok",200
@@ -131,41 +143,41 @@ def video():
                 f.write(f"duration {seg:.6f}\n")
             f.write(f"file '{os.path.basename(scene_files[-1])}'\n")
 
-        out=f"danggeun_v6_2_{job}_{duration}s.mp4"
+        out=f"danggeun_v6_3_{job}_{duration}s.mp4"
         outp=os.path.join(OUT,out)
         cmd=["ffmpeg","-y","-f","concat","-safe","0","-i",concat,
              "-vf",f"fps={FPS},format=yuv420p","-c:v","libx264","-preset","ultrafast",
              "-crf","25","-t",str(duration),"-movflags","+faststart",outp]
-        try:
-            subprocess.run(cmd,check=True,stdout=subprocess.DEVNULL,
-                           stderr=subprocess.PIPE,timeout=180,text=True)
-        except subprocess.CalledProcessError as e:
-            logging.error("FFMPEG_ERROR job=%s code=%s stderr=%s",job,e.returncode,(e.stderr or "")[-3000:])
-            raise
+        subprocess.run(cmd,check=True,stdout=subprocess.DEVNULL,
+                       stderr=subprocess.PIPE,timeout=180,text=True)
 
         elapsed=round(time.time()-t0,1)
         logging.info("VIDEO_DONE job=%s sec=%s file=%s",job,elapsed,out)
-        if jobdir:
-            shutil.rmtree(jobdir,ignore_errors=True)
+        if jobdir: shutil.rmtree(jobdir,ignore_errors=True)
+
         return jsonify(ok=True,
                        file_url=f"/output/{out}",
                        download_url=f"/download/{out}",
                        filename=out,
-                       seconds=elapsed)
+                       seconds=elapsed,
+                       version="6.3")
     except subprocess.TimeoutExpired:
         logging.exception("VIDEO_TIMEOUT job=%s",job)
         return jsonify(error="영상 생성 제한시간을 초과했습니다."),504
+    except subprocess.CalledProcessError as e:
+        logging.error("FFMPEG_ERROR job=%s code=%s stderr=%s",job,e.returncode,(e.stderr or "")[-3000:])
+        return jsonify(error="FFmpeg 영상 생성 오류가 발생했습니다."),500
     except Exception as e:
         logging.exception("VIDEO_ERROR job=%s",job)
         return jsonify(error=f"영상 생성 오류: {str(e)[:180]}"),500
 
 @app.route("/output/<path:name>")
 def output(name):
-    return send_from_directory(OUT,name,as_attachment=False)
+    return send_from_directory(OUT,name,as_attachment=False,conditional=False)
 
 @app.route("/download/<path:name>")
 def download(name):
-    return send_from_directory(OUT,name,as_attachment=True,download_name=name)
+    return send_from_directory(OUT,name,as_attachment=True,download_name=name,conditional=False)
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=int(os.getenv("PORT","10000")))
