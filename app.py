@@ -11,7 +11,7 @@ OUT = BASE / "output"
 OUT.mkdir(exist_ok=True)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-log = logging.getLogger("danggeun-v5.1")
+log = logging.getLogger("danggeun-v5.2")
 
 VIDEO_W, VIDEO_H = 720, 1280
 VIDEO_FPS = 15
@@ -178,35 +178,41 @@ def video():
 
         if sec == 15:
             texts = [
-                title or f"{p} 알아보는 중이라면?",
-                "신청 전\n주요 조건부터 확인",
-                "상품 정보와\n세부 내용 체크",
-                "나에게 맞는지\n비교해보세요",
-                "자세한 내용\n바로가기",
+                title or f"{p}\n알아보는 중이라면?",
+                "결정하기 전\n조건부터 확인",
+                "혜택·비용·조건은\n직접 비교해보세요",
+                "내 상황에 맞는지\n한 번 더 체크",
+                "자세한 내용은\n바로가기에서 확인",
             ]
             ds = [3] * 5
         else:
             texts = [
-                title or f"{p} 알아보는 중이라면?",
-                "신청 전\n주요 조건부터 확인",
-                "혜택과 조건은\n꼼꼼하게 체크",
-                "상품 정보와\n세부 내용 확인",
-                "나에게 맞는지\n비교해보세요",
-                "자세한 내용\n바로가기",
+                title or f"{p}\n알아보는 중이라면?",
+                "결정하기 전\n조건부터 확인",
+                "혜택·비용·조건은\n직접 비교",
+                "상품 정보와\n세부 내용 체크",
+                "내 상황에 맞는지\n한 번 더 확인",
+                "자세한 내용은\n바로가기에서 확인",
             ]
             ds = [5] * 6
 
+        # V5.2: lightweight micro-motion. Create 3 crop variants per scene.
+        # This gives visible motion while staying friendly to Render Free.
         scenes = []
-        for i, t in enumerate(texts):
-            o = tmp / f"s{i}.jpg"
-            scene(imgs[i % len(imgs)], t, i, o)
-            scenes.append(o)
+        for i, (t, dur) in enumerate(zip(texts, ds)):
+            variants = []
+            for k in range(3):
+                o = tmp / f"s{i}_{k}.jpg"
+                scene(imgs[i % len(imgs)], t, i * 3 + k, o)
+                variants.append(o)
+            scenes.append((variants, dur))
 
         concat = tmp / "list.txt"
         lines = []
-        for s, dur in zip(scenes, ds):
-            lines += [f"file '{s.as_posix()}'", f"duration {dur}"]
-        lines.append(f"file '{scenes[-1].as_posix()}'")
+        for variants, dur in scenes:
+            each = dur / len(variants)
+            for s in variants:
+                lines += [f"file '{s.as_posix()}'", f"duration {each:.3f}"]
         concat.write_text("\n".join(lines), encoding="utf-8")
 
         ff = imageio_ffmpeg.get_ffmpeg_exe()
@@ -215,7 +221,8 @@ def video():
             ff, "-y", "-hide_banner", "-loglevel", "error",
             "-f", "concat", "-safe", "0", "-i", str(concat),
             "-r", str(VIDEO_FPS),
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "30",
+            "-t", str(sec),
+            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "29",
             "-pix_fmt", "yuv420p", "-movflags", "+faststart",
             str(base),
         ]
@@ -241,7 +248,7 @@ def video():
         return jsonify(
             ok=True,
             download=f"/download/{out.name}",
-            note=f"V5.1 경량 모드(720×1280)로 완성했습니다. 생성 시간 {elapsed}초",
+            note=f"V5.2 광고강화 모드(720×1280 · 정확히 {sec}초)로 완성했습니다. 생성 시간 {elapsed}초",
         )
 
     except subprocess.TimeoutExpired:
