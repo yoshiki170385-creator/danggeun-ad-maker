@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from PIL import Image, ImageDraw, ImageFont
 import os, uuid, subprocess, logging, time, shutil, re
@@ -90,11 +89,9 @@ def generate():
 
 @app.route("/api/video", methods=["POST"])
 def video():
-    t0=time.time()
-    job=None
+    t0=time.time(); job=None; jobdir=None
     try:
         product=safe_text(request.form.get("product"),50)
-        title=safe_text(request.form.get("title"),70)
         hook=safe_text(request.form.get("hook"),70) or f"{product}, 선택 전 확인하세요"
         point1=safe_text(request.form.get("point1"),70) or "조건을 먼저 비교해보세요"
         point2=safe_text(request.form.get("point2"),70) or "내 상황에 맞는지 체크"
@@ -123,38 +120,38 @@ def video():
         seg=duration/scene_count
         concat=os.path.join(jobdir,"list.txt")
         scene_files=[]
-
         for i in range(scene_count):
             p=os.path.join(jobdir,f"scene{i}.jpg")
             frame(paths[i%len(paths)],captions[i],"광고 · 제휴",i).save(p,quality=90)
             scene_files.append(p)
 
-        # 중요: concat demuxer는 list.txt의 폴더를 기준으로 상대경로를 해석합니다.
-        # 따라서 uploads/<job>/scene0.jpg 전체 상대경로가 아니라 파일명만 기록합니다.
         with open(concat,"w",encoding="utf-8") as f:
             for p in scene_files:
                 f.write(f"file '{os.path.basename(p)}'\n")
                 f.write(f"duration {seg:.6f}\n")
             f.write(f"file '{os.path.basename(scene_files[-1])}'\n")
 
-        out=f"danggeun_v6_1_{job}_{duration}s.mp4"
+        out=f"danggeun_v6_2_{job}_{duration}s.mp4"
         outp=os.path.join(OUT,out)
         cmd=["ffmpeg","-y","-f","concat","-safe","0","-i",concat,
              "-vf",f"fps={FPS},format=yuv420p","-c:v","libx264","-preset","ultrafast",
              "-crf","25","-t",str(duration),"-movflags","+faststart",outp]
-
         try:
             subprocess.run(cmd,check=True,stdout=subprocess.DEVNULL,
                            stderr=subprocess.PIPE,timeout=180,text=True)
         except subprocess.CalledProcessError as e:
-            logging.error("FFMPEG_ERROR job=%s code=%s stderr=%s",
-                          job,e.returncode,(e.stderr or "")[-3000:])
+            logging.error("FFMPEG_ERROR job=%s code=%s stderr=%s",job,e.returncode,(e.stderr or "")[-3000:])
             raise
 
-        shutil.rmtree(jobdir,ignore_errors=True)
-        logging.info("VIDEO_DONE job=%s sec=%.1f",job,time.time()-t0)
-        return jsonify(ok=True,file=f"/output/{out}",seconds=round(time.time()-t0,1))
-
+        elapsed=round(time.time()-t0,1)
+        logging.info("VIDEO_DONE job=%s sec=%s file=%s",job,elapsed,out)
+        if jobdir:
+            shutil.rmtree(jobdir,ignore_errors=True)
+        return jsonify(ok=True,
+                       file_url=f"/output/{out}",
+                       download_url=f"/download/{out}",
+                       filename=out,
+                       seconds=elapsed)
     except subprocess.TimeoutExpired:
         logging.exception("VIDEO_TIMEOUT job=%s",job)
         return jsonify(error="영상 생성 제한시간을 초과했습니다."),504
@@ -163,7 +160,12 @@ def video():
         return jsonify(error=f"영상 생성 오류: {str(e)[:180]}"),500
 
 @app.route("/output/<path:name>")
-def output(name): return send_from_directory(OUT,name,as_attachment=False)
+def output(name):
+    return send_from_directory(OUT,name,as_attachment=False)
+
+@app.route("/download/<path:name>")
+def download(name):
+    return send_from_directory(OUT,name,as_attachment=True,download_name=name)
 
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=int(os.getenv("PORT","10000")))
