@@ -1,40 +1,30 @@
 <!doctype html><html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>당근 제휴광고 제작기 V8</title>
+<title>당근 제휴광고 제작기 V9</title>
 <style>
-body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#222}
-.wrap{max-width:860px;margin:auto;padding:20px}.badge{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:7px 12px;font-size:13px}
+body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#222}.wrap{max-width:860px;margin:auto;padding:20px}
+.badge{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:7px 12px;font-size:13px}
 .card{background:#fff;border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 2px 12px #0001}
-label{display:block;font-weight:700;margin-top:12px}
-input,select{width:100%;box-sizing:border-box;padding:14px;margin:7px 0 10px;border:1px solid #ddd;border-radius:12px;font-size:16px}
+label{display:block;font-weight:700;margin-top:12px}input,select{width:100%;box-sizing:border-box;padding:14px;margin:7px 0 10px;border:1px solid #ddd;border-radius:12px;font-size:16px}
 button{width:100%;background:#ff6f0f;color:#fff;border:0;border-radius:12px;padding:17px;font-size:18px;font-weight:bold;margin-top:14px}
 .muted{color:#777;font-size:13px;line-height:1.6}.tip{background:#fff3e8;border-radius:12px;padding:14px;margin:12px 0}
-</style></head>
-<body><div class="wrap">
-<span class="badge">DBsense 1장 이미지 특화 V8</span>
-<h1>🥕 당근 제휴광고 제작기 V8</h1>
-<p class="muted">한 장의 광고 이미지를 억지로 여러 크롭으로 자르지 않고, 블러 배경 + 원본 보존 + 연속 줌/팬으로 영상처럼 만듭니다.</p>
-
-<div class="card"><h2>광고영상 자동 제작</h2>
-<div class="tip"><b>V8 핵심:</b> DBsense 이미지가 1장이어도 됩니다. 문구는 비워두면 자동 생성됩니다.</div>
-
+</style></head><body><div class="wrap">
+<span class="badge">DBsense 이미지 1장 특화 V9</span>
+<h1>🥕 당근 제휴광고 제작기 V9</h1>
+<p class="muted">이미지 한 장을 여러 가상 장면처럼 구성하고, 짧은 자막과 부드러운 카메라 움직임으로 자연스러운 세로 광고영상을 만듭니다.</p>
+<div class="card"><h2>이미지 → 광고영상</h2>
+<div class="tip"><b>V9:</b> 문구는 비워도 자동 생성됩니다. 원본 홍보링크는 수정하지 않습니다.</div>
 <form action="/video-form" method="post" enctype="multipart/form-data">
-<label>상품명 *</label><input name="product" required placeholder="예: 우리들이 사용하는 인터넷">
-<label>업체/브랜드명</label><input name="brand" placeholder="예: KT / 코웨이">
+<label>상품명 *</label><input name="product" required placeholder="예: 코웨이 정수기 렌탈">
+<label>업체/브랜드명</label><input name="brand" placeholder="예: 코웨이">
 <label>DBsense 원본 홍보링크 *</label><input name="url" required placeholder="https://...">
-
 <label>광고 제목</label><input name="title" placeholder="비워두면 자동">
-<label>첫 3초 후킹</label><input name="hook" placeholder="비워두면 자동">
+<label>첫 후킹</label><input name="hook" placeholder="비워두면 자동">
 <label>핵심 포인트 1</label><input name="point1" placeholder="비워두면 자동">
 <label>핵심 포인트 2</label><input name="point2" placeholder="비워두면 자동">
 <label>마지막 CTA</label><input name="cta" placeholder="비워두면 자동">
-
-<label>영상 길이</label>
-<select name="duration"><option value="15">15초</option><option value="30">30초</option></select>
-
-<label>DBsense/광고주 사용 허가 이미지 *</label>
-<input name="images" type="file" accept="image/*" multiple required>
-<p class="muted">이미지 1장 권장. 여러 장이 있으면 최대 4장까지 자동 순환합니다.</p>
-
-<button type="submit">🎬 V8 광고영상 만들기</button>
+<label>영상 길이</label><select name="duration"><option value="15">15초</option><option value="30">30초</option></select>
+<label>DBsense/광고주 사용 허가 이미지 *</label><input name="images" type="file" accept="image/*" multiple required>
+<p class="muted">이미지 1장만으로 제작 가능합니다. 여러 장이 있으면 최대 4장까지 사용합니다.</p>
+<button type="submit">🎬 V9 광고영상 만들기</button>
 </form></div></div></body></html>
