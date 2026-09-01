@@ -137,7 +137,7 @@ def create_video(form, files):
         out = f"danggeun_v10_light_{job}_{duration}s.mp4"
         outp = os.path.join(OUT, out)
 
-        logging.info("VIDEO_START_V10_LIGHT job=%s duration=%s", job, duration)
+        logging.info("VIDEO_START_V10_LIGHT_FIX job=%s duration=%s", job, duration)
 
         # One ffmpeg invocation only.
         # Gentle continuous zoom + four short caption windows.
@@ -162,7 +162,7 @@ def create_video(form, files):
             txt = esc_drawtext(text)
             filters.append(
                 "drawbox="
-                "x=44:y=h-235:w=w-88:h=145:"
+                "x=44:y=ih-235:w=iw-88:h=145:"
                 "color=black@0.48:t=fill:"
                 f"enable='between(t,{start:.3f},{end:.3f})'"
             )
@@ -170,7 +170,7 @@ def create_video(form, files):
                 "drawtext="
                 f"text='{txt}'{fontopt}:"
                 "fontcolor=white:fontsize=34:"
-                "x=(w-text_w)/2:y=h-190:"
+                "x=(main_w-text_w)/2:y=main_h-190:"
                 "borderw=1:bordercolor=black@0.55:"
                 f"enable='between(t,{start:.3f},{end:.3f})'"
             )
@@ -199,11 +199,11 @@ def create_video(form, files):
             text=True,
         )
         if proc.returncode != 0:
-            logging.error("FFMPEG_ERROR_V10_LIGHT job=%s stderr=%s", job, (proc.stderr or "")[-3000:])
+            logging.error("FFMPEG_ERROR_V10_LIGHT_FIX job=%s stderr=%s", job, (proc.stderr or "")[-3000:])
             raise RuntimeError("영상 생성에 실패했습니다.")
 
         elapsed = round(time.time() - t0, 1)
-        logging.info("VIDEO_DONE_V10_LIGHT job=%s sec=%s file=%s", job, elapsed, out)
+        logging.info("VIDEO_DONE_V10_LIGHT_FIX job=%s sec=%s file=%s", job, elapsed, out)
 
         return {
             "filename": out,
@@ -243,7 +243,7 @@ def video_form():
         result = create_video(request.form, request.files.getlist("images"))
         return render_template("result.html", **result)
     except Exception as e:
-        logging.exception("VIDEO_FORM_ERROR_V10_LIGHT")
+        logging.exception("VIDEO_FORM_ERROR_V10_LIGHT_FIX")
         return render_template("result.html", error=str(e)), 500
 
 @app.route("/download/<path:name>")
