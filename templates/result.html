@@ -1,1 +1,27 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V10 영상 결과</title><style>body{font-family:Arial,sans-serif;background:#fff7ef;margin:0}.wrap{max-width:780px;margin:auto;padding:20px}.card{background:#fff;border-radius:20px;padding:22px;box-shadow:0 2px 12px #0001}video{width:100%;background:#000;border-radius:14px}.btn{display:block;text-align:center;text-decoration:none;border-radius:12px;padding:18px;margin:14px 0;font-size:19px;font-weight:bold}.black{background:#111;color:#fff}.orange{background:#ff6f0f;color:#fff}.info{background:#f7f7f7;border-radius:12px;padding:14px;line-height:1.7}.err{color:#c00;font-weight:bold}</style></head><body><div class="wrap"><div class="card"><h1>🥕 V10 영상 결과</h1>{% if error %}<p class="err">❌ {{ error }}</p><a class="btn orange" href="/">← 다시 만들기</a>{% else %}<h2>✅ 영상 완성!</h2><p>{{ duration }}초 · 이미지 {{ image_count }}장 · {{ mode }} 모드 · 생성 시간 {{ seconds }}초</p><video controls playsinline src="/output/{{ filename }}"></video><a class="btn black" href="/download/{{ filename }}">⬇️ MP4 다운로드</a><a class="btn orange" href="/output/{{ filename }}" target="_blank">▶️ 영상 새 창에서 열기</a><div class="info"><b>영상 문구</b><br>첫 3초: {{ hook }}<br>핵심 1: {{ point1 }}<br>핵심 2: {{ point2 }}<br>CTA: {{ cta }}</div><a class="btn orange" href="/">← 새 영상 만들기</a>{% endif %}</div></div></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V10 FINAL 영상 결과</title>
+<style>
+body{margin:0;background:#fff7ef;font-family:Arial,"Noto Sans KR",sans-serif;color:#111}
+.wrap{max-width:900px;margin:40px auto;padding:24px}
+.card{background:#fff;border-radius:24px;padding:28px;box-shadow:0 8px 28px rgba(0,0,0,.08)}
+video{width:100%;max-height:72vh;background:#000;border-radius:18px}
+.btn{display:block;text-align:center;text-decoration:none;font-size:22px;font-weight:800;padding:20px;margin-top:16px;border-radius:16px}
+.black{background:#111;color:#fff}.orange{background:#ff6f0f;color:#fff}
+.err{color:#e11919;font-weight:800;font-size:20px}
+.meta{color:#666;margin:8px 0 18px}
+</style></head>
+<body><div class="wrap"><div class="card">
+<h1>🥕 V10 FINAL 영상 결과</h1>
+{% if error %}
+<p class="err">❌ {{ error }}</p>
+<a class="btn orange" href="/">← 다시 만들기</a>
+{% else %}
+<p class="meta">완료 · {{ duration }}초 · 생성시간 {{ seconds }}초</p>
+<video controls playsinline preload="metadata"><source src="{{ url_for('output', name=filename) }}" type="video/mp4"></video>
+<a class="btn black" href="{{ url_for('download', name=filename) }}">⬇️ MP4 다운로드</a>
+<a class="btn orange" href="/">← 새 영상 만들기</a>
+{% endif %}
+</div></div></body></html>
