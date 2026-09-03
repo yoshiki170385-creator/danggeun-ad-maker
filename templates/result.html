@@ -1,27 +1,13 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V10 FINAL 영상 결과</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>당근 광고 이미지 결과</title>
 <style>
-body{margin:0;background:#fff7ef;font-family:Arial,"Noto Sans KR",sans-serif;color:#111}
-.wrap{max-width:900px;margin:40px auto;padding:24px}
-.card{background:#fff;border-radius:24px;padding:28px;box-shadow:0 8px 28px rgba(0,0,0,.08)}
-video{width:100%;max-height:72vh;background:#000;border-radius:18px}
-.btn{display:block;text-align:center;text-decoration:none;font-size:22px;font-weight:800;padding:20px;margin-top:16px;border-radius:16px}
-.black{background:#111;color:#fff}.orange{background:#ff6f0f;color:#fff}
-.err{color:#e11919;font-weight:800;font-size:20px}
-.meta{color:#666;margin:8px 0 18px}
-</style></head>
-<body><div class="wrap"><div class="card">
-<h1>🥕 V10 FINAL 영상 결과</h1>
-{% if error %}
-<p class="err">❌ {{ error }}</p>
-<a class="btn orange" href="/">← 다시 만들기</a>
+body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#171717}.wrap{max-width:1000px;margin:0 auto;padding:24px}.card{background:white;border-radius:22px;padding:24px;box-shadow:0 5px 22px rgba(0,0,0,.07)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:20px}.item{border:1px solid #eee;border-radius:18px;padding:14px}.item img{width:100%;border-radius:13px}.title{font-size:17px;font-weight:900;line-height:1.45;margin:10px 0}.btn{display:block;text-align:center;text-decoration:none;padding:14px;border-radius:12px;font-weight:900;margin-top:10px}.black{background:#111;color:#fff}.orange{background:#ff6f0f;color:#fff}.best{background:#fff1e5;border:2px solid #ff6f0f;border-radius:16px;padding:16px}.link{word-break:break-all;background:#f7f7f7;border-radius:12px;padding:13px}.err{color:#d71919;font-size:20px;font-weight:900}
+</style></head><body><div class="wrap"><div class="card">
+<h1>🥕 당근 광고 이미지 결과</h1>
+{% if error %}<p class="err">❌ {{ error }}</p><a class="btn orange" href="/">← 다시 만들기</a>
 {% else %}
-<p class="meta">완료 · {{ duration }}초 · 생성시간 {{ seconds }}초</p>
-<video controls playsinline preload="metadata"><source src="{{ url_for('output', name=filename) }}" type="video/mp4"></video>
-<a class="btn black" href="{{ url_for('download', name=filename) }}">⬇️ MP4 다운로드</a>
-<a class="btn orange" href="/">← 새 영상 만들기</a>
-{% endif %}
-</div></div></body></html>
+<div class="best"><b>🥇 추천 1순위 광고 제목</b><br><span style="font-size:22px;font-weight:900">{{ recommended }}</span></div>
+<p><b>DBsense 원본 홍보링크</b></p><div class="link">{{ url }}</div>
+<a class="btn black" href="{{ url_for('download', name=zip_name) }}">⬇️ 이미지 5종 + 제목 ZIP 한 번에 다운로드</a>
+<div class="grid">{% for item in outputs %}<div class="item"><b>{{ item.label }}</b><img src="{{ url_for('output', name=item.filename) }}" alt="{{ item.label }}"><div class="title">{{ item.title }}</div><a class="btn orange" href="{{ url_for('download', name=item.filename) }}">이미지 저장</a></div>{% endfor %}</div>
+<a class="btn orange" href="/">← 새 광고 만들기</a>
+{% endif %}</div></div></body></html>
