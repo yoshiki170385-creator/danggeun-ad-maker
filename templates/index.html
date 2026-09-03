@@ -1,17 +1,16 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>당근 제휴광고 제작기 V10</title><style>
-body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#222}.wrap{max-width:860px;margin:auto;padding:20px}.badge{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:7px 12px;font-size:13px}.card{background:#fff;border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 2px 12px #0001}label{display:block;font-weight:700;margin-top:12px}input,select{width:100%;box-sizing:border-box;padding:14px;margin:7px 0 10px;border:1px solid #ddd;border-radius:12px;font-size:16px}button{width:100%;background:#ff6f0f;color:#fff;border:0;border-radius:12px;padding:17px;font-size:18px;font-weight:bold;margin-top:14px}.muted{color:#777;font-size:13px;line-height:1.6}.tip{background:#fff3e8;border-radius:12px;padding:14px;margin:12px 0}</style></head><body><div class="wrap">
-<span class="badge">현재 버전 V10 · 이미지 1장 자연스러운 영상</span><h1>🥕 당근 제휴광고 제작기 V10</h1><p class="muted">DBsense 광고 이미지 한 장을 원본 문구는 최대한 보존하면서, 장면별 시선 이동과 아주 약한 줌/팬으로 자연스럽게 구성합니다.</p>
-<div class="card"><h2>이미지 → 광고영상</h2><div class="tip"><b>추천:</b> DBsense처럼 이미지 안에 글자가 많은 광고는 <b>원본 문구 보존</b> 모드를 그대로 사용하세요.</div>
-<form action="/video-form" method="post" enctype="multipart/form-data">
-<label>상품명 *</label><input name="product" required placeholder="예: 영상PD 전문가 과정">
-<label>업체/브랜드명</label><input name="brand" placeholder="예: 브랜드명">
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>당근 제휴광고 이미지 제작기 FINAL</title>
+<style>
+body{font-family:Arial,sans-serif;background:#fff7ef;margin:0;color:#171717}.wrap{max-width:880px;margin:0 auto;padding:24px}.badge{display:inline-block;background:#111;color:#fff;border-radius:999px;padding:8px 13px;font-size:13px}.card{background:#fff;border-radius:22px;padding:24px;margin-top:18px;box-shadow:0 5px 22px rgba(0,0,0,.07)}label{display:block;font-weight:800;margin-top:14px}input{width:100%;box-sizing:border-box;padding:15px;margin-top:7px;border:1px solid #ddd;border-radius:12px;font-size:16px}button{width:100%;background:#ff6f0f;color:#fff;border:0;border-radius:14px;padding:18px;margin-top:22px;font-size:19px;font-weight:900}.tip{background:#fff2e8;border-radius:14px;padding:14px;line-height:1.6}.muted{font-size:13px;color:#777;line-height:1.6}
+</style></head><body><div class="wrap">
+<span class="badge">최종판 · 당근 이미지 광고 전용</span>
+<h1>🥕 당근 제휴광고 이미지 제작기</h1>
+<p class="muted">DBsense 이미지 1장으로 당근 광고 테스트용 이미지 5종과 광고 제목 5개를 만듭니다. 외부 AI/API를 사용하지 않습니다.</p>
+<div class="card"><div class="tip"><b>입력은 4개만:</b> 상품명 · 브랜드명 · DBsense 원본 링크 · 광고주 사용 허가 이미지</div>
+<form action="/make-images" method="post" enctype="multipart/form-data">
+<label>상품명 *</label><input name="product" required placeholder="예: 코웨이 정수기 렌탈">
+<label>업체/브랜드명</label><input name="brand" placeholder="예: 코웨이">
 <label>DBsense 원본 홍보링크 *</label><input name="url" required placeholder="https://...">
-<label>광고 제목</label><input name="title" placeholder="비워두면 자동 생성">
-<label>첫 3초 후킹</label><input name="hook" placeholder="비워두면 자동 생성">
-<label>핵심 포인트 1</label><input name="point1" placeholder="비워두면 자동 생성">
-<label>핵심 포인트 2</label><input name="point2" placeholder="비워두면 자동 생성">
-<label>마지막 CTA</label><input name="cta" placeholder="비워두면 자동 생성">
-<label>이미지 유형</label><select name="image_mode"><option value="text" selected>원본 문구 보존 — DBsense 이미지 추천</option><option value="photo">상품사진 — 이미지에 글자가 적을 때</option></select>
-<label>영상 길이</label><select name="duration"><option value="15">15초</option><option value="30">30초</option></select>
-<label>DBsense/광고주 사용 허가 이미지 *</label><input name="images" type="file" accept="image/*" multiple required><p class="muted">이미지 1장만으로 제작 가능. 여러 장이면 최대 4장까지 사용합니다.</p>
-<button type="submit">🎬 V10 광고영상 만들기</button></form></div></div></body></html>
+<label>DBsense/광고주 사용 허가 이미지 *</label><input name="image" type="file" accept="image/*" required>
+<button type="submit">🖼️ 당근 광고 이미지 5종 만들기</button>
+</form></div></div></body></html>
